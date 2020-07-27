@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      body {
+        text-align: center;
+      }
+      .lds-roller {
+        display: inline-block;
+        position: relative;
+        width: 80px;
+        height: 80px;
+      }
+      .lds-roller div {
+        animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        transform-origin: 40px 40px;
+      }
+      .lds-roller div:after {
+        content: " ";
+        display: block;
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: black;
+        margin: -4px 0 0 -4px;
+      }
+      .lds-roller div:nth-child(1) {
+        animation-delay: -0.036s;
+      }
+      .lds-roller div:nth-child(1):after {
+        top: 63px;
+        left: 63px;
+      }
+      .lds-roller div:nth-child(2) {
+        animation-delay: -0.072s;
+      }
+      .lds-roller div:nth-child(2):after {
+        top: 68px;
+        left: 56px;
+      }
+      .lds-roller div:nth-child(3) {
+        animation-delay: -0.108s;
+      }
+      .lds-roller div:nth-child(3):after {
+        top: 71px;
+        left: 48px;
+      }
+      .lds-roller div:nth-child(4) {
+        animation-delay: -0.144s;
+      }
+      .lds-roller div:nth-child(4):after {
+        top: 72px;
+        left: 40px;
+      }
+      .lds-roller div:nth-child(5) {
+        animation-delay: -0.18s;
+      }
+      .lds-roller div:nth-child(5):after {
+        top: 71px;
+        left: 32px;
+      }
+      .lds-roller div:nth-child(6) {
+        animation-delay: -0.216s;
+      }
+      .lds-roller div:nth-child(6):after {
+        top: 68px;
+        left: 24px;
+      }
+      .lds-roller div:nth-child(7) {
+        animation-delay: -0.252s;
+      }
+      .lds-roller div:nth-child(7):after {
+        top: 63px;
+        left: 17px;
+      }
+      .lds-roller div:nth-child(8) {
+        animation-delay: -0.288s;
+      }
+      .lds-roller div:nth-child(8):after {
+        top: 56px;
+        left: 12px;
+      }
+      @keyframes lds-roller {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Book Builder</h1>
+    <label>School Name: </label><input type="text" id="searchTerm" />
+    <button id="btn">Search</button>
+    <hr />
+    <div class="lds-roller">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+
+    <div id="searchResults"></div>
+    <script>
+      function errorHandler(err) {
+        console.log(err);
+      }
+      function getSchoolName() {
+        loader.style.display = "inline-block";
+
+        let searchTerm = document.getElementById("searchTerm").value;
+        console.log(searchTerm);
+        google.script.run
+          .withSuccessHandler(printSearchResults)
+          .withFailureHandler(errorHandler)
+          .getSchoolNames(searchTerm);
+      }
+
+      function killTheKids(div) {
+        while (div.firstChild) {
+          div.removeChild(div.firstChild);
+        }
+        return;
+      }
+
+      function printSearchResults(results) {
+        loader.style.display = "none";
+        for (let i = 0; i < results.length; i++) {
+          let searchResult = document.createElement("p");
+          searchResult.textContent = results[i];
+          searchResultsBox.appendChild(searchResult);
+        }
+        const schools = document.querySelectorAll("p");
+        schools.forEach((school) => {
+          school.addEventListener("click", () => {
+            google.script.run
+              .withSuccessHandler(createTable)
+              .getSchoolData(school.textContent);
+            killTheKids(searchResultsBox);
+            loader.style.display = "inline-block";
+          });
+        });
+      }
+
+      function createTable(results) {
+        google.script.run.withSuccessHandler(close).writeToSheet(results);
+
+        // Need freshman retention
+        /* No deadlines, common app eligibility, US News ranking, no app fee, no avg gpa, no address
+      schoolName.textContent = results.results[0].school.name;
+      address.textContent = results.results[0].school.city + ", " + results.results[0].school.state;
+      website.textContent = results.results[0].school.school_url;
+      
+      // 1 = Public, 2 = Private nonprofit, 3 = Private for-profit
+      privatePublic.textContent = results.results[0].school.ownership;
+      enrollment.textContent = results.results[0].latest.student.enrollment.undergrad_12_month;
+      
+      actRange.textContent = results.results[0].latest.admissions.act_scores["25th_percentile"].cumulative + "-" + results.results[0].latest.admissions.act_scores["75th_percentile"].cumulative;
+      acceptanceRate.textContent = results.results[0].latest.admissions.admission_rate.overall;
+       
+      inState.textContent = results.results[0].latest.cost.tuition.in_state;
+      outState.textContent = results.results[0].latest.cost.tuition.out_of_state;
+     
+      avgDebt.textContent = results.results[0].latest.aid.median_debt.completers.overall;
+      propBorrowed.textContent = results.results[0].latest.aid.federal_loan_rate;
+      */
+      }
+      function close() {
+        google.script.host.close();
+      }
+
+      let searchResultsBox = document.getElementById("searchResults");
+      document.getElementById("btn").addEventListener("click", getSchoolName);
+      let loader = document.querySelector(".lds-roller");
+      loader.style.display = "none";
+    </script>
+  </body>
+</html>
