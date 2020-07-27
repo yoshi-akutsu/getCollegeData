@@ -120,7 +120,6 @@
         console.log(searchTerm);
         google.script.run
           .withSuccessHandler(printSearchResults)
-          .withFailureHandler(errorHandler)
           .getSchoolNames(searchTerm);
       }
 
